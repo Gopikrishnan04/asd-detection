@@ -18,27 +18,76 @@ st.caption("This application is a screening aid and not a medical diagnosis.")
 # Survey Section
 # -------------------------------------------------
 st.header("📝 Parent / Caregiver Questionnaire")
+st.caption("Q-CHAT-10: Quantitative Checklist for Autism in Toddlers (18–24 months)")
+
+# ---- Child Demographics ----
+st.subheader("👶 Child Information")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    age_months = st.number_input(
+        "Child's Age (in months)",
+        min_value=18,
+        max_value=36,
+        value=24,
+        step=1
+    )
+    sex = st.selectbox(
+        "Child's Gender",
+        ["m", "f"],
+        format_func=lambda x: "Male" if x == "m" else "Female"
+    )
+    ethnicity = st.selectbox(
+        "Ethnicity",
+        [
+            "White European", "middle eastern", "Hispanic",
+            "black", "asian", "south asian", "Native Indian",
+            "Latino", "mixed", "Pacifica", "Others"
+        ]
+    )
+
+with col2:
+    jaundice = st.radio(
+        "Was the child born with jaundice?",
+        ["no", "yes"],
+        horizontal=True
+    )
+    family_asd = st.radio(
+        "Does any family member have ASD?",
+        ["no", "yes"],
+        horizontal=True
+    )
+    who_completed = st.selectbox(
+        "Who is completing this test?",
+        [
+            "family member",
+            "Health Care Professional",
+            "Health care professional",
+            "Self",
+            "Others"
+        ]
+    )
+
+st.divider()
+
+# -------------------------------------------------
+# Q-CHAT-10 Questions (Yes/No - matches dataset)
+# -------------------------------------------------
+st.subheader("📋 Behavioural Questions")
+st.caption("For each question, please select Yes or No based on your child's behaviour.")
 
 questions = [
-    "Does your child struggle to understand how others are feeling by looking at their facial expressions?",
-    
-    "Does your child find it hard to keep a conversation going back-and-forth, or do they tend to talk mostly about their own interests?",
-    
-    "When playing with other children, does your child have difficulty understanding the unwritten social rules (like taking turns or sharing)?",
-    
-    "Does your child become very upset or anxious when their daily routine changes, even in small ways?",
-    
-    "Does your child find it difficult to imagine what things might be like from another person's point of view?",
-    
-    "In social gatherings (like birthday parties or family events), does your child seem confused about what to do or how to join in?",
-    
-    "Does your child avoid making eye contact, or does eye contact seem uncomfortable or unnatural for them?",
-    
-    "Does your child have very strong, focused interests in specific topics (like trains, numbers, or certain TV shows) that they talk about repeatedly?",
-    
-    "Does your child notice small details that others might miss, but sometimes miss the bigger picture or main point?",
-    
-    "Does your child find noisy, crowded, or bright environments (like supermarkets or playgrounds) overwhelming or distressing?"
+    "Does your child look at you when you call his/her name?",
+    "How easy is it for you to get eye contact with your child?",
+    "Does your child point to indicate that s/he wants something? (e.g. a toy that is out of reach)",
+    "Does your child point to share interest with you? (e.g. pointing at an interesting sight)",
+    "Does your child pretend? (e.g. care for dolls, talk on a toy phone)",
+    "Does your child follow where you're looking?",
+    "If you or someone else in the family is visibly upset, does your child show signs of wanting to comfort them? (e.g. stroking hair, hugging them)",
+    "Would you describe your child's first words as typical?",
+    "Does your child use simple gestures? (e.g. wave goodbye)",
+    "Does your child stare at nothing with no apparent purpose?"
 ]
 
 answers = []
@@ -52,8 +101,23 @@ for i, q in enumerate(questions, start=1):
     )
     answers.append(1 if response == "Yes" else 0)
 
+# Show live Q-CHAT score
+qchat_score = sum(answers)
+st.info(
+    f"📊 Q-CHAT-10 Score: **{qchat_score}/10** — "
+    f"{'⚠️ Score > 3: Consider referral for further assessment' if qchat_score > 3 else '✅ Score ≤ 3: Low concern'}"
+)
+
 if st.button("Submit Survey"):
-    survey_risk, survey_prob = predict_survey_risk(answers)
+    survey_risk, survey_prob = predict_survey_risk(
+        answers,
+        age_months=age_months,
+        sex=sex,
+        ethnicity=ethnicity,
+        jaundice=jaundice,
+        family_asd=family_asd,
+        who_completed=who_completed
+    )
     st.session_state["survey_risk"] = survey_risk
     st.session_state["survey_prob"] = survey_prob
 
@@ -85,10 +149,10 @@ if "survey_risk" in st.session_state and "emotion_score" in st.session_state:
 
     st.header("🧩 Final ASD Screening Result")
 
-    survey_risk = st.session_state["survey_risk"]
+    survey_risk   = st.session_state["survey_risk"]
     emotion_score = st.session_state["emotion_score"]
 
-    # IMPROVED FUSION LOGIC
+    # Rule-based fusion (survey priority)
     if survey_risk == "High" or emotion_score == 2:
         final_risk = "High"
     elif survey_risk == "Moderate" or emotion_score == 1:
@@ -107,4 +171,3 @@ if "survey_risk" in st.session_state and "emotion_score" in st.session_state:
         "This result is based on combined survey responses and emotion recognition. "
         "It is intended only as a preliminary screening tool."
     )
-
