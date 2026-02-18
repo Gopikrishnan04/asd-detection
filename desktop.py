@@ -124,7 +124,7 @@ class ASDScreeningApp(ctk.CTk):
         self.build_final_result()
 
     # -------------------------------------------------
-    # Demographics Section
+    # Demographics Section (UPDATED - Only 3 fields)
     # -------------------------------------------------
     def build_demographics(self):
 
@@ -137,84 +137,35 @@ class ASDScreeningApp(ctk.CTk):
         demo_frame = ctk.CTkFrame(self.main_frame)
         demo_frame.pack(fill="x", padx=10, pady=5)
 
-        left  = ctk.CTkFrame(demo_frame)
-        right = ctk.CTkFrame(demo_frame)
-        left.pack(side="left",  fill="both", expand=True, padx=5, pady=5)
-        right.pack(side="right", fill="both", expand=True, padx=5, pady=5)
-
-        # -- LEFT COLUMN --
-
+        # Single column layout
         # Age
-        ctk.CTkLabel(left, text="Child's Age (in months):",
+        ctk.CTkLabel(demo_frame, text="Child's Age (in months):",
                      font=ctk.CTkFont(size=12)).pack(anchor="w", padx=10, pady=(8, 2))
         self.age_var = ctk.StringVar(value="24")
-        ctk.CTkEntry(left, textvariable=self.age_var,
+        ctk.CTkEntry(demo_frame, textvariable=self.age_var,
                      placeholder_text="18-36").pack(fill="x", padx=10, pady=(0, 8))
 
         # Gender
-        ctk.CTkLabel(left, text="Child's Gender:",
+        ctk.CTkLabel(demo_frame, text="Child's Gender:",
                      font=ctk.CTkFont(size=12)).pack(anchor="w", padx=10, pady=(0, 2))
         self.sex_var = ctk.StringVar(value="m")
         ctk.CTkOptionMenu(
-            left,
+            demo_frame,
             variable=self.sex_var,
             values=["m", "f"],
             command=lambda x: None
         ).pack(fill="x", padx=10, pady=(0, 8))
 
-        # Ethnicity
-        ctk.CTkLabel(left, text="Ethnicity:",
-                     font=ctk.CTkFont(size=12)).pack(anchor="w", padx=10, pady=(0, 2))
-        self.ethnicity_var = ctk.StringVar(value="White European")
-        ctk.CTkOptionMenu(
-            left,
-            variable=self.ethnicity_var,
-            values=[
-                "White European", "middle eastern", "Hispanic",
-                "black", "asian", "south asian", "Native Indian",
-                "Latino", "mixed", "Pacifica", "Others"
-            ]
-        ).pack(fill="x", padx=10, pady=(0, 8))
-
-        # -- RIGHT COLUMN --
-
-        # Jaundice
-        ctk.CTkLabel(right, text="Was child born with jaundice?",
-                     font=ctk.CTkFont(size=12)).pack(anchor="w", padx=10, pady=(8, 2))
-        self.jaundice_var = ctk.StringVar(value="no")
-        jaundice_frame = ctk.CTkFrame(right, fg_color="transparent")
-        jaundice_frame.pack(fill="x", padx=10, pady=(0, 8))
-        ctk.CTkRadioButton(jaundice_frame, text="No",
-                           variable=self.jaundice_var, value="no").pack(side="left", padx=5)
-        ctk.CTkRadioButton(jaundice_frame, text="Yes",
-                           variable=self.jaundice_var, value="yes").pack(side="left", padx=5)
-
         # Family ASD
-        ctk.CTkLabel(right, text="Does any family member have ASD?",
+        ctk.CTkLabel(demo_frame, text="Does any family member have ASD?",
                      font=ctk.CTkFont(size=12)).pack(anchor="w", padx=10, pady=(0, 2))
         self.family_var = ctk.StringVar(value="no")
-        family_frame = ctk.CTkFrame(right, fg_color="transparent")
-        family_frame.pack(fill="x", padx=10, pady=(0, 8))
+        family_frame = ctk.CTkFrame(demo_frame, fg_color="transparent")
+        family_frame.pack(anchor="w", padx=10, pady=(0, 8))
         ctk.CTkRadioButton(family_frame, text="No",
                            variable=self.family_var, value="no").pack(side="left", padx=5)
         ctk.CTkRadioButton(family_frame, text="Yes",
                            variable=self.family_var, value="yes").pack(side="left", padx=5)
-
-        # Who completed
-        ctk.CTkLabel(right, text="Who is completing this test?",
-                     font=ctk.CTkFont(size=12)).pack(anchor="w", padx=10, pady=(0, 2))
-        self.who_var = ctk.StringVar(value="family member")
-        ctk.CTkOptionMenu(
-            right,
-            variable=self.who_var,
-            values=[
-                "family member",
-                "Health Care Professional",
-                "Health care professional",
-                "Self",
-                "Others"
-            ]
-        ).pack(fill="x", padx=10, pady=(0, 8))
 
     # -------------------------------------------------
     # Behavioural Questions Section
@@ -362,7 +313,7 @@ class ASDScreeningApp(ctk.CTk):
             )
 
     # -------------------------------------------------
-    # Submit Survey
+    # Submit Survey (UPDATED - Only 3 parameters)
     # -------------------------------------------------
     def submit_survey(self):
         answers = [1 if v.get() == "Yes" else 0 for v in self.answer_vars]
@@ -379,10 +330,7 @@ class ASDScreeningApp(ctk.CTk):
             answers,
             age_months=age,
             sex=self.sex_var.get(),
-            ethnicity=self.ethnicity_var.get(),
-            jaundice=self.jaundice_var.get(),
-            family_asd=self.family_var.get(),
-            who_completed=self.who_var.get()
+            family_asd=self.family_var.get()
         )
 
         self.survey_risk = survey_risk
@@ -425,7 +373,7 @@ class ASDScreeningApp(ctk.CTk):
         self.compute_final_result()
 
     # -------------------------------------------------
-    # Compute Final Result (fusion logic)
+    # Compute Final Result (UPDATED - Correct fusion)
     # -------------------------------------------------
     def compute_final_result(self):
 
@@ -434,12 +382,12 @@ class ASDScreeningApp(ctk.CTk):
             return
 
         # Rule-based fusion (survey priority)
-        if self.survey_risk == "High" or self.emotion_score == 2:
+        if self.survey_risk == "High":
             final_risk = "High"
-        elif self.survey_risk == "Moderate" or self.emotion_score == 1:
-            final_risk = "Moderate"
-        else:
-            final_risk = "Low"
+        elif self.survey_risk == "Moderate":
+            final_risk = "High" if self.emotion_score == 2 else "Moderate"
+        elif self.survey_risk == "Low":
+            final_risk = "Moderate" if self.emotion_score == 2 else "Low"
 
         # Update final result label
         if final_risk == "High":

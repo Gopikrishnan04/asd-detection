@@ -38,36 +38,16 @@ with col1:
         ["m", "f"],
         format_func=lambda x: "Male" if x == "m" else "Female"
     )
-    ethnicity = st.selectbox(
-        "Ethnicity",
-        [
-            "White European", "middle eastern", "Hispanic",
-            "black", "asian", "south asian", "Native Indian",
-            "Latino", "mixed", "Pacifica", "Others"
-        ]
-    )
+    
 
 with col2:
-    jaundice = st.radio(
-        "Was the child born with jaundice?",
-        ["no", "yes"],
-        horizontal=True
-    )
+    
     family_asd = st.radio(
         "Does any family member have ASD?",
         ["no", "yes"],
         horizontal=True
     )
-    who_completed = st.selectbox(
-        "Who is completing this test?",
-        [
-            "family member",
-            "Health Care Professional",
-            "Health care professional",
-            "Self",
-            "Others"
-        ]
-    )
+    
 
 st.divider()
 
@@ -113,10 +93,10 @@ if st.button("Submit Survey"):
         answers,
         age_months=age_months,
         sex=sex,
-        ethnicity=ethnicity,
-        jaundice=jaundice,
+        
+        
         family_asd=family_asd,
-        who_completed=who_completed
+        
     )
     st.session_state["survey_risk"] = survey_risk
     st.session_state["survey_prob"] = survey_prob
